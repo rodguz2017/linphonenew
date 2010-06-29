@@ -1,8 +1,13 @@
 /*
 	NO LICENSE
 */
-#include <ilbc/iLBC_encode.h>
-#include <ilbc/iLBC_decode.h>
+#ifdef ANDROID
+	#include <iLBC_encode.h>
+	#include <iLBC_decode.h>
+#else
+	#include <ilbc/iLBC_encode.h>
+	#include <ilbc/iLBC_decode.h>
+#endif /*ANDROID*/
 
 #include "mediastreamer2/msfilter.h"
 
