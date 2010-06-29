@@ -53,8 +53,10 @@ static int enc_add_fmtp(MSFilter *f, void *arg){
 	fmtp_get_value(fmtp, "mode", buf, sizeof(buf));
 	if (buf[0]=='\0'){
 		ms_warning("unsupported fmtp parameter (%s)!", fmtp);
+		return 0;
 	}
-	else if (strstr(buf,"20")!=NULL){
+	ms_message("iLBC encoder got mode=%s",buf);
+	if (strstr(buf,"20")!=NULL){
 		s->nsamples=BLOCKL_20MS;
 		s->nbytes=NO_OF_BYTES_20MS;
 		s->ms_per_frame=20;
