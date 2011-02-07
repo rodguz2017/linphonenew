@@ -22,7 +22,7 @@ ZIP_EXCLUDED=include
 ISS_SCRIPT=msilbc.iss
 ISS_SCRIPT_PATH=$(shell cd $(top_srcdir) && pwd)/$(ISS_SCRIPT)
 #path to Inno Setup 5 compiler
-ISCC=/c/Program\ Files/Inno\ Setup\ 5/ISCC.exe
+ISCC=ISCC.exe
 PACKAGE_WIN32_FILELIST=$(PACKAGE)-win32.filelist
 
 setup.exe: zip

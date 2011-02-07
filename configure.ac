@@ -21,6 +21,9 @@ AC_ARG_ENABLE([20ms-frames], [AS_HELP_STRING([--enable-20ms-frames],
 # initialize automake
 AM_INIT_AUTOMAKE([tar-ustar])
 
+AC_CANONICAL_SYSTEM
+
+
 # initialize libtool
 AC_LIBTOOL_WIN32_DLL
 LT_INIT([disable-static])
