@@ -129,10 +129,10 @@ static void enc_process(MSFilter *f){
 				samples2[i]=samples[i+(s->nsamples*k)];
 			}
 			iLBC_encode((uint8_t*)om->b_wptr,samples2,&s->ilbc_enc);
-			om->b_wptr+=s->nbytes;
-			s->ts+=s->nsamples;
+			om->b_wptr+=s->nbytes;			
 		}
-		mblk_set_timestamp_info(om,s->ts-s->nsamples);
+		s->ts+=s->nsamples*frame_per_packet;
+		mblk_set_timestamp_info(om,s->ts);
 		ms_queue_put(f->outputs[0],om);
 	}
 }
