@@ -54,6 +54,7 @@ PKG_CHECK_MODULES(ILBC, ilbc >= 0.0.0)
 AC_CONFIG_FILES([
   Makefile
   msilbc.iss
+  msilbc.spec
 ])
 AC_OUTPUT
 

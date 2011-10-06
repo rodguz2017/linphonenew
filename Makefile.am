@@ -1,5 +1,7 @@
 ACLOCAL_AMFLAGS = -I m4
 
+EXTRA_DIST=autogen.sh msilbc.iss.in msilbc.spec
+
 plugindir = $(libdir)/mediastreamer/plugins
 
 plugin_LTLIBRARIES = libmsilbc.la
@@ -53,6 +55,16 @@ zip:
 	cd $(INSTALLDIR)/$(prefix) && rm -rf $(ZIP_EXCLUDED) && \
 	zip -r $(ZIPFILE) *
 
+
+.phony: rpm
+
+rpm:
+	$(MAKE) dist
+	TAR_OPTIONS=--wildcards rpmbuild -ta --clean --rmsource --rmspec $(PACKAGE)-$(VERSION).tar.gz
+
+
 clean-local:
 	-rm -rf $(PACKAGE)-install
 	-rm -f $(PACKAGE)-win32-$(VERSION).zip
+
+
