@@ -17,7 +17,7 @@ typedef struct EncState{
 	int ms_per_frame;
 	int ptime;
 	uint32_t ts;
-	MSBufferizer bufferizer;
+	MSBufferizer *bufferizer;
 	iLBC_Enc_Inst_t ilbc_enc;	
 }EncState;
 
@@ -34,13 +34,13 @@ static void enc_init(MSFilter *f){
 #endif
 	s->ptime=0;
 	s->ts=0;
-	ms_bufferizer_init(&s->bufferizer);
+	s->bufferizer=ms_bufferizer_new();
 	f->data=s;
 }
 
 static void enc_uninit(MSFilter *f){
 	EncState *s=(EncState*)f->data;
-	ms_bufferizer_uninit(&s->bufferizer);
+	ms_bufferizer_destroy(s->bufferizer);
 	ms_free(f->data);
 }
 
@@ -118,9 +118,9 @@ static void enc_process(MSFilter *f){
 		frame_per_packet=7;
 
 	while((im=ms_queue_get(f->inputs[0]))!=NULL){
-		ms_bufferizer_put(&s->bufferizer,im);
+		ms_bufferizer_put(s->bufferizer,im);
 	}
-	while(ms_bufferizer_read(&s->bufferizer,(uint8_t*)samples,size*frame_per_packet)==(size*frame_per_packet)){
+	while(ms_bufferizer_read(s->bufferizer,(uint8_t*)samples,size*frame_per_packet)==(size*frame_per_packet)){
 		int k;
 		om=allocb(s->nbytes*frame_per_packet,0);
 		for (k=0;k<frame_per_packet;k++)
