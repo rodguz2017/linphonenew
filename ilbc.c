@@ -55,20 +55,33 @@ static int enc_add_fmtp(MSFilter *f, void *arg){
 	EncState *s=(EncState*)f->data;
 
 	memset(buf, '\0', sizeof(buf));
-	fmtp_get_value(fmtp, "mode", buf, sizeof(buf));
-	if (buf[0]=='\0'){
-		ms_warning("unsupported fmtp parameter (%s)!", fmtp);
-		return 0;
+	if (fmtp_get_value(fmtp, "mode", buf, sizeof(buf))){
+		if (buf[0]=='\0'){
+			ms_warning("unsupported fmtp parameter (%s)!", fmtp);
+			return 0;
+		}
+		ms_message("iLBC encoder got mode=%s",buf);
+		if (strstr(buf,"20")!=NULL){
+			s->nsamples=BLOCKL_20MS;
+			s->nbytes=NO_OF_BYTES_20MS;
+			s->ms_per_frame=20;
+		}else if (strstr(buf,"30")!=NULL){
+			s->nsamples=BLOCKL_30MS;
+			s->nbytes=NO_OF_BYTES_30MS;
+			s->ms_per_frame=30;
+		}
 	}
-	ms_message("iLBC encoder got mode=%s",buf);
-	if (strstr(buf,"20")!=NULL){
-		s->nsamples=BLOCKL_20MS;
-		s->nbytes=NO_OF_BYTES_20MS;
-		s->ms_per_frame=20;
-	}else if (strstr(buf,"30")!=NULL){
-		s->nsamples=BLOCKL_30MS;
-		s->nbytes=NO_OF_BYTES_30MS;
-		s->ms_per_frame=30;
+	if (fmtp_get_value(fmtp,"ptime",buf,sizeof(buf))){
+		int ptime;
+		if (buf[0]=='\0'){
+			ms_warning("unsupported fmtp parameter (%s)!", fmtp);
+			return 0;
+		}
+		ms_message("iLBC encoder got ptime=%s",buf);
+		ptime=atoi(buf);
+		if (ptime>=20 && ptime<=140){
+			s->ptime=ptime;
+		}
 	}
 	return 0;
 }
@@ -154,9 +167,9 @@ MSFilterDesc ms_ilbc_enc_desc={
 	1,
 	1,
 	enc_init,
-    enc_preprocess,
+	enc_preprocess,
 	enc_process,
-    NULL,
+	NULL,
 	enc_uninit,
 	enc_methods
 };
