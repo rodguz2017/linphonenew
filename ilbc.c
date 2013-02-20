@@ -10,6 +10,8 @@
 #endif /*ANDROID*/
 
 #include "mediastreamer2/msfilter.h"
+#include "mediastreamer2/mscodecutils.h"
+#include "mediastreamer2/msticker.h"
 
 typedef struct EncState{
 	int nsamples;
@@ -153,7 +155,7 @@ static void enc_process(MSFilter *f){
 static MSFilterMethod enc_methods[]={
 	{	MS_FILTER_ADD_FMTP,		enc_add_fmtp },
 	{	MS_FILTER_ADD_ATTR,		enc_add_attr},
-	{	0								,		NULL			}
+	{	0		,		NULL	}
 };
 
 #ifdef _MSC_VER
@@ -197,42 +199,51 @@ typedef struct DecState{
 	int nsamples;
 	int nbytes;
 	int ms_per_frame;
-	iLBC_Dec_Inst_t ilbc_dec;	
+	iLBC_Dec_Inst_t ilbc_dec;
+	bool_t postfilter;
+	bool_t ready;
+	MSConcealerContext *plcctx;
 }DecState;
 
 
 static void dec_init(MSFilter *f){
-	DecState *s=ms_new(DecState,1);
+	DecState *s=ms_new0(DecState,1);
 	s->nsamples=0;
 	s->nbytes=0;
 	s->ms_per_frame=0;
+	s->postfilter=1;
+	s->ready=FALSE;
+	s->plcctx=ms_concealer_context_new(200);
 	f->data=s;
 }
 
 static void dec_uninit(MSFilter *f){
-	ms_free(f->data);
+	DecState *s=(DecState*)f->data;
+	if (s->plcctx) ms_concealer_context_destroy(s->plcctx);
+	ms_free(s);
 }
 
 static void dec_process(MSFilter *f){
 	DecState *s=(DecState*)f->data;
 	mblk_t *im,*om;
 	int nbytes;
-	float samples[BLOCKL_MAX];
+	float samples[BLOCKL_MAX]={0};
 	int i;
 
 	while ((im=ms_queue_get(f->inputs[0]))!=NULL){
 		nbytes=msgdsize(im);
-		if (nbytes<=0)
-			return;
-		if (nbytes%38!=0 && nbytes%50!=0)
-			return;
+		if (nbytes==0  || (nbytes%38!=0 && nbytes%50!=0)){
+			freemsg(im);
+			continue;
+		}
 		if (nbytes%38==0 && s->nbytes!=NO_OF_BYTES_20MS)
 		{
 			/* not yet configured, or misconfigured */
 			s->ms_per_frame=20;
 			s->nbytes=NO_OF_BYTES_20MS;
 			s->nsamples=BLOCKL_20MS;
-			initDecode(&s->ilbc_dec,s->ms_per_frame,0);
+			s->ready=TRUE;
+			initDecode(&s->ilbc_dec,s->ms_per_frame,s->postfilter);
 		}
 		else if (nbytes%50==0 && s->nbytes!=NO_OF_BYTES_30MS)
 		{
@@ -240,11 +251,13 @@ static void dec_process(MSFilter *f){
 			s->ms_per_frame=30;
 			s->nbytes=NO_OF_BYTES_30MS;
 			s->nsamples=BLOCKL_30MS;
-			initDecode(&s->ilbc_dec,s->ms_per_frame,0);
+			s->ready=TRUE;
+			initDecode(&s->ilbc_dec,s->ms_per_frame,s->postfilter);
 		}
 		if (s->nbytes>0 && nbytes>=s->nbytes){
 			int frame_per_packet = nbytes/s->nbytes;
 			int k;
+			int plctime;
 
 			for (k=0;k<frame_per_packet;k++)
 			{
@@ -255,12 +268,38 @@ static void dec_process(MSFilter *f){
 				}
 				ms_queue_put(f->outputs[0],om);
 			}
+			if (s->plcctx){
+				plctime=ms_concealer_inc_sample_time(s->plcctx,f->ticker->time,frame_per_packet*s->ms_per_frame,1);
+				if (plctime>0){
+					ms_warning("ilbc: did plc during %i ms",plctime);
+				}
+			}
 		}else{
 			ms_warning("bad iLBC frame !");
 		}
 		freemsg(im);
 	}
+	if (s->plcctx && s->ready && ms_concealer_context_is_concealement_required(s->plcctx,f->ticker->time)){
+		om=allocb(s->nsamples*2,0);
+		iLBC_decode(samples,(uint8_t*)NULL,&s->ilbc_dec,0 /*PLC*/);
+		for (i=0;i<s->nsamples;i++,om->b_wptr+=2){
+			*((int16_t*)om->b_wptr)=samples[i];
+		}
+		ms_queue_put(f->outputs[0],om);
+		ms_concealer_inc_sample_time(s->plcctx,f->ticker->time,s->ms_per_frame,0);
+	}
 }
+
+static int dec_have_plc(MSFilter *f, void *arg){
+	DecState *s=(DecState*)f->data;
+	*((int *)arg) = (s->plcctx!=NULL);
+	return 0;
+}
+
+static MSFilterMethod dec_methods[]={
+	{	MS_DECODER_HAVE_PLC,		dec_have_plc },
+	{	0		,		NULL	}
+};
 
 #ifdef _MSC_VER
 
@@ -273,11 +312,13 @@ MSFilterDesc ms_ilbc_dec_desc={
 	1,
 	1,
 	dec_init,
-    NULL,
+	NULL,
 	dec_process,
-    NULL,
+	NULL,
 	dec_uninit,
-    NULL
+	NULL,
+	dec_methods,
+	MS_FILTER_IS_PUMP
 };
 
 #else
@@ -292,7 +333,9 @@ MSFilterDesc ms_ilbc_dec_desc={
 	.noutputs=1,
 	.init=dec_init,
 	.process=dec_process,
-	.uninit=dec_uninit
+	.uninit=dec_uninit,
+	.methods=dec_methods,
+	.flags=MS_FILTER_IS_PUMP
 };
 
 #endif
