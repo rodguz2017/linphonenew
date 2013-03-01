@@ -316,7 +316,6 @@ MSFilterDesc ms_ilbc_dec_desc={
 	dec_process,
 	NULL,
 	dec_uninit,
-	NULL,
 	dec_methods,
 	MS_FILTER_IS_PUMP
 };
