@@ -23,6 +23,7 @@
     <RootNamespace>msilbc</RootNamespace>
     <DefaultLanguage>en-US</DefaultLanguage>
     <MinimumVisualStudioVersion>11.0</MinimumVisualStudioVersion>
+    <ProjectName>libmsilbc</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -162,6 +163,11 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\ilbc.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\..\libilbc-rfc3951\build\windows\libilbc-rfc3951\libilbc-rfc3951\libilbc-rfc3951.vcxproj">
+      <Project>{8e216bf3-2dd8-4794-8e97-b1aed301ed4d}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\WindowsPhone\v$(TargetPlatformVersion)\Microsoft.Cpp.WindowsPhone.$(TargetPlatformVersion).targets" Condition="'$(Platform)'=='ARM'" />
