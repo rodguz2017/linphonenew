@@ -266,6 +266,7 @@ static void dec_process(MSFilter *f){
 				for (i=0;i<s->nsamples;i++,om->b_wptr+=2){
 					*((int16_t*)om->b_wptr)=samples[i];
 				}
+				mblk_meta_copy(im,om);
 				ms_queue_put(f->outputs[0],om);
 			}
 			if (s->plcctx){
@@ -285,6 +286,7 @@ static void dec_process(MSFilter *f){
 		for (i=0;i<s->nsamples;i++,om->b_wptr+=2){
 			*((int16_t*)om->b_wptr)=samples[i];
 		}
+		mblk_set_plc_flag(om,TRUE);
 		ms_queue_put(f->outputs[0],om);
 		ms_concealer_inc_sample_time(s->plcctx,f->ticker->time,s->ms_per_frame,0);
 	}
