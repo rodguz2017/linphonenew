@@ -6,7 +6,6 @@ AC_PREREQ(2.63)
 
 # set up the directory structure
 AC_CONFIG_SRCDIR([ilbc.c])
-AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_MACRO_DIR([m4])
 
 # declare this variable precious for automated processing from higher level
@@ -22,6 +21,8 @@ AC_ARG_ENABLE([20ms-frames], [AS_HELP_STRING([--enable-20ms-frames],
 AM_INIT_AUTOMAKE([tar-ustar])
 
 AC_CANONICAL_SYSTEM
+
+AC_CONFIG_HEADERS(config.h)
 
 
 # initialize libtool
