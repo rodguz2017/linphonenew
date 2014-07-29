@@ -12,4 +12,15 @@ msilbc.iss
 config.status
 libtool
 autom4te.cache
+INSTALL
+aclocal.m4
+compile
+config.guess
+config.h.in
+config.sub
+depcomp
+install-sh
+ltmain.sh
+m4/
+missing
 
