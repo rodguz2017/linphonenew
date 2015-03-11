@@ -13,6 +13,12 @@
 #include "mediastreamer2/mscodecutils.h"
 #include "mediastreamer2/msticker.h"
 
+#ifdef HAVE_ms_bufferizer_fill_current_metas
+#define ms_bufferizer_fill_current_metas(b,m) ms_bufferizer_fill_current_metas(b,m)
+#else
+#define ms_bufferizer_fill_current_metas(b,m)
+#endif
+
 typedef struct EncState{
 	int nsamples;
 	int nbytes;
@@ -148,6 +154,7 @@ static void enc_process(MSFilter *f){
 		}
 		s->ts+=s->nsamples*frame_per_packet;
 		mblk_set_timestamp_info(om,s->ts);
+		ms_bufferizer_fill_current_metas(s->bufferizer,om);
 		ms_queue_put(f->outputs[0],om);
 	}
 }
