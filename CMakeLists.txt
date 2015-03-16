@@ -22,6 +22,7 @@
 
 cmake_minimum_required(VERSION 3.0)
 project(MSILBC C)
+set(VERSION "2.1.1")
 
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}")

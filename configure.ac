@@ -1,5 +1,5 @@
 # process this file with autoconf to produce a configure script.
-AC_INIT([msilbc],[2.1.0])
+AC_INIT([msilbc],[2.1.1])
 
 # require at least this autoconf version
 AC_PREREQ(2.63)
