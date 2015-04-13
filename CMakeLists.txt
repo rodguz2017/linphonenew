@@ -24,10 +24,8 @@ cmake_minimum_required(VERSION 3.0)
 project(MSILBC C)
 
 
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}")
-
 find_package(Mediastreamer2 REQUIRED)
-find_package(Ilbc REQUIRED)
+find_package(IlbcRfc3951 REQUIRED)
 
 
 include_directories(
@@ -35,20 +33,13 @@ include_directories(
 	src
 	${CMAKE_CURRENT_BINARY_DIR}
 	${CMAKE_CURRENT_BINARY_DIR}/src
-	${ILBC_INCLUDE_DIRS}
+	${ILBCRFC3951_INCLUDE_DIRS}
 )
 
 
-if(MSVC)
-	find_library(LIBGCC NAMES gcc)
-	find_library(LIBMINGWEX NAMES mingwex)
-endif()
-
 set(LIBS
-	${LIBGCC}
-	${LIBMINGWEX}
 	${MEDIASTREAMER2_LIBRARIES}
-	${ILBC_LIBRARIES}
+	${ILBCRFC3951_LIBRARIES}
 )
 
 set(SOURCE_FILES ilbc.c)
