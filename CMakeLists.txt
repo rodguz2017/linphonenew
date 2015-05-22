@@ -28,6 +28,9 @@ find_package(Mediastreamer2 REQUIRED)
 find_package(IlbcRfc3951 REQUIRED)
 
 
+option(ENABLE_STATIC "Build static library (default is shared library)." NO)
+
+
 include_directories(
 	${MEDIASTREAMER2_INCLUDE_DIRS}
 	src
@@ -43,16 +46,20 @@ set(LIBS
 )
 
 set(SOURCE_FILES ilbc.c)
-add_library(msilbc SHARED ${SOURCE_FILES})
-set_target_properties(msilbc PROPERTIES VERSION 0)
-if(MSVC)
-	if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-		install(FILES ${CMAKE_CURRENT_BINARY_DIR}/Debug/libmsilbc.pdb
-			DESTINATION bin
-			PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
-		)
+if(ENABLE_STATIC)
+	add_library(msilbc STATIC ${SOURCE_FILES})
+else()
+	add_library(msilbc SHARED ${SOURCE_FILES})
+	set_target_properties(msilbc PROPERTIES VERSION 0)
+	if(MSVC)
+		if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+			install(FILES ${CMAKE_CURRENT_BINARY_DIR}/Debug/libmsilbc.pdb
+				DESTINATION bin
+				PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
+			)
+		endif()
+		set_target_properties(msilbc PROPERTIES PREFIX "lib")
 	endif()
-	set_target_properties(msilbc PROPERTIES PREFIX "lib")
 endif()
 target_link_libraries(msilbc ${LIBS})
 
@@ -62,3 +69,4 @@ install(TARGETS msilbc
 	ARCHIVE DESTINATION lib/mediastreamer/plugins
 	PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
 )
+
