@@ -24,7 +24,11 @@ cmake_minimum_required(VERSION 3.0)
 project(MSILBC C)
 
 
-find_package(Mediastreamer2 REQUIRED)
+if(LINPHONE_BUILDER_GROUP_EXTERNAL_SOURCE_PATH_BUILDERS)
+	include("${EP_ms2_CONFIG_DIR}/Mediastreamer2Config.cmake")
+else()
+	find_package(Mediastreamer2 REQUIRED)
+endif()
 find_package(IlbcRfc3951 REQUIRED)
 
 
