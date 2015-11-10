@@ -1,7 +1,7 @@
 This package supplies the mediastreamer plugin for the iLBC audio
 codec, which is necessary to use the codec with Linphone.  The package
 does not contain the codec, which must be obtained separately.  One
-way to get the codec is to also install libilb0-rfc3951, which
+way to get the codec is to also install libilbc-rfc3951, which
 provides a codec using the source code published in IETF RFC 3951.
 
 You can configure this package to use 20ms frames instead of 30ms
